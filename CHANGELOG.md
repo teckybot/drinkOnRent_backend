@@ -76,3 +76,24 @@ Format: [Semantic Versioning](https://semver.org/).
 - Phase-2 introduces the **Admin ↔ User connection request workflow** with real-time communication.
 - Purifier lifecycle management from Phase-1 remains intact.
 - System is now ready for **Phase-3 features** (payments).
+
+---
+
+## [2.1.0] - 26-09-2025
+
+### Added
+- **Auto-link purifiers by phone number**:
+  - `GET /api/user/dashboard` now automatically searches for purifiers matching the user's phone number if no purifiers are assigned.
+  - Found purifiers are attached to the user with `connectionRequestStatus: accepted` and returned in the dashboard.
+
+### Fixed
+- **Dashboard purifier display issues**:
+  - Filter out missing or deleted purifier references to prevent null entries.
+- **Purifier deletion workflow**:
+  - `DELETE /api/admin/purifiers/:id` now removes references from assigned users to maintain data integrity.
+- **Code quality**:
+  - Updated backend files and ran linting for consistency and error reduction.
+
+### Notes
+- Ensures users always see relevant purifier data in their dashboard.
+- Maintains correct purifier assignment and prevents dangling references after deletions.

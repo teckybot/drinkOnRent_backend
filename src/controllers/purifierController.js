@@ -1,5 +1,6 @@
 
 import Purifier from '../models/Purifier.js';
+import { RegularUser } from '../models/User.js';
 import {
   emitPurifierCreated,
   emitPurifierUpdated,
@@ -45,7 +46,7 @@ export const updatePurifier = async (req, res) => {
     if (!updatedPurifier) {
       return res.status(404).json({ message: 'Purifier not found' });
     }
-
+    
     // Notify clients in real-time
     emitPurifierUpdated(updatedPurifier);
 
@@ -63,6 +64,12 @@ export const deletePurifier = async (req, res) => {
     if (!deletedPurifier) return res.status(404).json({ message: 'Purifier not found' });
 
     emitPurifierDeleted(req.params.id); // Emit deletion
+
+    // Remove references from users who had this purifier assigned
+    await RegularUser.updateMany(
+      { assignedPurifiers: deletedPurifier._id },
+      { $pull: { assignedPurifiers: deletedPurifier._id } }
+    );
     res.json({ message: 'Purifier deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });

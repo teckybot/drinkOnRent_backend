@@ -1,6 +1,6 @@
 
 # 📘 Purifier Management Backend
-![version](https://img.shields.io/badge/version-2.0.0-blue)
+![version](https://img.shields.io/badge/version-2.1.0-blue)
 
 ## 🚀 Overview 
 #### {Updated}
@@ -78,7 +78,9 @@ purifier-management-backend/
 ### 🔹 User APIs (`/api/user`)
 Protected with **JWT + role=user**  
 
-- `GET /dashboard` → Get assigned purifiers & connection request status  
+- `GET /dashboard` → Get assigned purifiers & connection request status
+  - **New:** Automatically links purifiers to the user by phone number if no purifiers are assigned.
+  - Filters out deleted or missing purifiers to prevent null entries.  
 - `POST /request-connection` → Request new purifier connection (pending until admin action)  
 
 Socket events received by **Users**:  
@@ -130,6 +132,12 @@ Open to IoT hardware (no auth required).
 - `GET /` → `"Ping successful. DOR-Server responded"`
 
 ---
+
+### Notes / Fixes
+- Purifier deletion now removes references from users to prevent dangling links.
+- Ensures dashboard always shows valid purifier data.
+
+--- 
 
 ## 📦 Installation & Setup
 

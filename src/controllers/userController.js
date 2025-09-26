@@ -1,14 +1,34 @@
 import { RegularUser } from '../models/User.js';
+import Purifier from '../models/Purifier.js';
 import { emitConnectionRequested } from '../sockets/connectionEvents.js';
 
 // GET /api/user/dashboard
 export const getUserDashboard = async (req, res) => {
   try {
-    const user = await RegularUser.findById(req.user.sub).populate('assignedPurifiers');
+    let user = await RegularUser.findById(req.user.sub).populate('assignedPurifiers');
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Filter out any missing or deleted purifier refs
+    let assigned = Array.isArray(user.assignedPurifiers)
+      ? user.assignedPurifiers.filter(Boolean)
+      : [];
+
+    // If no explicit assignment found, try to link by phoneNumber
+    if (!assigned.length && user.phoneNumber) {
+      const linked = await Purifier.findOne({ 'location.phoneNumber': user.phoneNumber });
+      if (linked) {
+        // Attach and persist; also reflect accepted state
+        user.assignedPurifiers.push(linked._id);
+        user.connectionRequestStatus = 'accepted';
+        await user.save();
+        // re-populate to return full doc
+        user = await RegularUser.findById(req.user.sub).populate('assignedPurifiers');
+        assigned = user.assignedPurifiers.filter(Boolean);
+      }
+    }
+
     res.json({
-      assignedPurifiers: user.assignedPurifiers,
+      assignedPurifiers: assigned,
       connectionRequestStatus: user.connectionRequestStatus
     });
   } catch (err) {
