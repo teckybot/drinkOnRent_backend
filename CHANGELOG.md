@@ -1,7 +1,7 @@
 
 ---
 
-# Updated `CHANGELOG.md` (Phase-1)
+# Updated `CHANGELOG.md` (Phase-2)
 
 ```md
 # Changelog
@@ -11,7 +11,7 @@ Format: [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.0.0] - 26-09-2025
+## [1.0.0] - 24-09-2025
 ### Added
 - **Authentication system**:
   - Register (`/api/auth/register`) for Admin & User roles
@@ -43,3 +43,36 @@ Format: [Semantic Versioning](https://semver.org/).
 - This is the **first stable release (v1.0.0)** after modularization.  
 - IoT APIs are hardware-ready and tested with timers.  
 - Admin APIs are fully protected by JWT + role checks.  
+
+---
+
+## [2.0.0] - 26-09-2025
+### Added
+- **User APIs** (`/api/user`)
+  - `GET /dashboard` → View assigned purifiers & connection status
+  - `POST /request-connection` → Submit a new purifier connection request
+- **Admin APIs** (`/api/admin`)
+  - `GET /pending-connections` → List all pending requests
+  - `POST /accept-connection` → Accept request, assign purifier (auto-generated 5-digit ID)
+  - `PATCH /reject-connection/:userId` → Reject request
+- **Socket.IO events for connection workflow**
+  - `connection:requested` → Broadcast to admins when user submits request
+  - `connection:accepted` → Sent to user when approved
+  - `connection:rejected` → Sent to user when rejected
+  - `connection:updated` → Notify admins to refresh pending list
+- **Connection request lifecycle**
+  - Users can request new purifier connections
+  - Admins can approve/reject with real-time updates
+- **Purifier assignment**: accepted users now get linked purifiers in their dashboard
+
+### Changed
+- Project structure extended with:
+  - `controllers/adminController.js` & `userController.js`
+  - `routes/adminRoutes.js` & `userRoutes.js`
+  - `sockets/connectionEvents.js`
+- Updated `User` model with `connectionRequestStatus`, `location`, and `assignedPurifiers` fields
+
+### Notes
+- Phase-2 introduces the **Admin ↔ User connection request workflow** with real-time communication.
+- Purifier lifecycle management from Phase-1 remains intact.
+- System is now ready for **Phase-3 features** (payments).

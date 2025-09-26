@@ -1,16 +1,17 @@
 
 # 📘 Purifier Management Backend
-![version](https://img.shields.io/badge/version-1.0.0-blue)
+![version](https://img.shields.io/badge/version-2.0.0-blue)
 
-## 🚀 Overview
+## 🚀 Overview 
+#### {Updated}
 
 This backend powers an **IoT-enabled Water Purifier Rental Management System**.  
 It provides **REST APIs** and **real-time Socket.IO events** for:
 
-- 📦 **Admin dashboard APIs** (managing purifiers & users)  
+- 📦 **Admin dashboard APIs** (managing purifiers, users & connection requests)  
 - 🔧 **Developer / IoT APIs** (used by hardware devices & testing team)  
 - 🔐 **Authentication & Authorization** (JWT-based login/register for Admin & Users)  
-- ⚡ **Real-time events** for purifier lifecycle changes  
+- ⚡ **Real-time events** (connection requests, approvals, rejections, purifier lifecycle) 
 
 ---
 
@@ -22,25 +23,30 @@ purifier-management-backend/
  ┃ ┣ 📂config
  ┃ ┃ ┗ db.js                # MongoDB connection
  ┃ ┣ 📂controllers
- ┃ ┃ ┣ authController.js                # Auth logic
- ┃ ┃ ┣ purifierController.js            # Admin-facing logic
+ ┃ ┃ ┣ adminController.js               # Admin: approve/reject connection requests
+ ┃ ┃ ┣ authController.js                # Authentication logic
  ┃ ┃ ┗ developerPurifierController.js   # IoT/Developer APIs
+ ┃ ┃ ┣ purifierController.js            # Admin purifier management logic
+ ┃ ┃ ┣ userController.js                # User dashboard & request connection
  ┃ ┣ 📂middleware
- ┃ ┃ ┣ auth.js                     # Authenticate & Authorize logic
- ┃ ┃ ┣ header_ErrorHandler.js      # Central error handler & Remove unwanted headers
+ ┃ ┃ ┣ auth.js                     # JWT auth & role-based access
+ ┃ ┃ ┣ header_ErrorHandler.js      # Error handling & header cleanup
  ┃ ┣ 📂models
  ┃ ┃ ┗ Purifier.js          # Purifier schema/model
- ┃ ┃ ┗ User.js          # User schema/model
+ ┃ ┃ ┗ User.js              # User schema/model
  ┃ ┣ 📂routes
- ┃ ┃ ┣ 📜authRoutes.js                 # Auth routes
- ┃ ┃ ┣ 📜developerPurifierRoutes.js    # IoT/Developer routes
- ┃ ┃ ┣ 📜purifierRoutes.js             # Admin-control routes
+ ┃ ┃ ┣ adminRoutes.js                # /api/admin     
+ ┃ ┃ ┣ authRoutes.js                 # /api/auth
+ ┃ ┃ ┣ developerPurifierRoutes.js    # /api/dev/purifiers routes
+ ┃ ┃ ┣ purifierRoutes.js             # /api/purifiers routes
+ ┃ ┃ ┗ userRoutes.js                 # /api/user
  ┃ ┣ 📂sockets
- ┃ ┃ ┗ 📜index.js               # Socket logic
+ ┃ ┃ ┗ index.js               # Socket.IO setup
+ ┃ ┃ ┣ connectionEvents.js    # Socket events for Device connection workflow
  ┃ ┣ 📂utils
- ┃ ┃ ┗ 📜activeTimers.js        # helper logic
+ ┃ ┃ ┗ activeTimers.js        # IoT 60s activation timers
  ┃ ┗ app.js                 # Express app setup
- ┣ server.js                # Server entry (ready for Socket.IO)
+ ┣ server.js                # Server entry 
  ┣ .env                     # Environment variables
  ┣ package.json
  ┗ README.md
@@ -61,11 +67,36 @@ purifier-management-backend/
 
 ---
 
-## 📑 API Endpoints (Phase 1)
+## 📑 API Endpoints (Phase 2)
 
 ### 🔹 Auth APIs (`/api/auth`)
 - `POST /login` → Login with phone number & password (returns JWT)
 - `POST /register` → Register new User/Admin
+
+---
+
+### 🔹 User APIs (`/api/user`)
+Protected with **JWT + role=user**  
+
+- `GET /dashboard` → Get assigned purifiers & connection request status  
+- `POST /request-connection` → Request new purifier connection (pending until admin action)  
+
+Socket events received by **Users**:  
+- `connection:accepted` → When admin accepts connection  
+- `connection:rejected` → When admin rejects connection  
+
+---
+
+### 🔹 Admin APIs (`/api/admin`)
+Protected with **JWT + role=admin**  
+
+- `GET /pending-connections` → View users with pending connection requests  
+- `POST /accept-connection` → Approve user request & assign purifier (auto-generate unique 5-digit ID)  
+- `PATCH /reject-connection/:userId` → Reject user request  
+
+Socket events received by **Admins**:  
+- `connection:requested` → When a user submits a new connection request  
+- `connection:updated` → When a connection is approved/rejected  
 
 ---
 
@@ -138,9 +169,9 @@ Server runs at:
 
 ---
 
-## 🔮 Next Steps (Phase 2)
-- **User & Admin** routes expansion (/api/user, /api/admin)
-- Integration with purifier connection requests
+## 🔮 Next Steps (Phase 3)
+- **Payment/Subscription** feature integration
+- Notification service integration
 ---
 
 ## 📓 Changelog

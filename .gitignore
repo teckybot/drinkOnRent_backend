@@ -20,19 +20,6 @@ dist
 src/controllers/adminController2.js
 src/controllers/userController2.js
 
-src/controllers/adminController.js
-src/controllers/userController.js
-
 #Models
 src/models/Complaint.js
 src/models/Recharge.js
-
-#routes
-src/routes/adminRoutes.js
-src/routes/userRoutes.js
-
-#sockets
-src/sockets/connectionEvents.js
-
-
-
